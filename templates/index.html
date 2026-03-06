@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Sunbelt Snack Station{% endblock %}
+{% block content %}
+<style>
+  .splash {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 2rem;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.07) 0%, transparent 60%),
+      var(--bg);
+  }
+  .splash-logo {
+    font-family: var(--display);
+    font-size: clamp(2.5rem, 6vw, 5rem);
+    font-weight: 800;
+    color: var(--amber);
+    letter-spacing: -0.02em;
+    text-align: center;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+  .splash-sub {
+    font-size: 0.65rem; letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--text-muted); text-align: center; margin-bottom: 3rem;
+  }
+  .splash-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 2.5rem;
+    width: 100%; max-width: 340px;
+  }
+  .splash-card-title {
+    font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;
+  }
+  .splash-actions { display: flex; flex-direction: column; gap: 0.75rem; }
+  .splash-btn {
+    display: block; width: 100%; padding: 0.9rem;
+    font-family: var(--mono); font-size: 0.7rem;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    text-align: center; text-decoration: none;
+    border: 1px solid var(--border2); color: var(--text-dim);
+    transition: all 0.2s; background: var(--surface2);
+  }
+  .splash-btn:hover { border-color: var(--amber); color: var(--amber); background: var(--amber-glow); }
+  .splash-btn.primary { background: var(--amber); color: #000; border-color: var(--amber); font-weight: 700; }
+  .splash-btn.primary:hover { background: #fbbf24; }
+  .splash-divider { height: 1px; background: var(--border); margin: 0.5rem 0; }
+  .splash-footer {
+    margin-top: 3rem; font-size: 0.6rem; letter-spacing: 0.1em;
+    color: var(--text-muted); text-align: center;
+  }
+  .blink { animation: blink 1s step-end infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+</style>
+
+<div class="splash">
+  <div class="splash-logo">SUNBELT</div>
+  <div class="splash-sub">Snack Station POS <span class="blink">_</span></div>
+  <div class="splash-card">
+    <div class="splash-card-title">Select an option to begin</div>
+    <div class="splash-actions">
+      <a href="{{ url_for('login') }}" class="splash-btn primary">→ Login</a>
+      <div class="splash-divider"></div>
+      <a href="{{ url_for('register') }}" class="splash-btn">Register Employee</a>
+      <a href="{{ url_for('register') }}?admin=true" class="splash-btn">Register Admin</a>
+    </div>
+  </div>
+  <div class="splash-footer">SUNBELT SNACK STATION · POS SYSTEM v2.0</div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Register · Sunbelt{% endblock %}
+{% block content %}
+<style>
+  .auth-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(ellipse at 50% 0%, rgba(245,166,35,0.06) 0%, transparent 55%), var(--bg); padding:2rem; }
+  .auth-box { width:100%; max-width:380px; }
+  .auth-header { margin-bottom:2rem; }
+  .auth-logo { font-family:var(--display); font-size:1.5rem; font-weight:800; color:var(--amber); margin-bottom:0.25rem; }
+  .auth-subtitle { font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--text-muted); }
+  .auth-card { background:var(--surface); border:1px solid var(--border); padding:2rem; }
+  .auth-card-title { font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-dim); margin-bottom:1.5rem; }
+  .auth-footer { margin-top:1rem; font-size:0.65rem; color:var(--text-muted); text-align:center; }
+  .auth-footer a { color:var(--amber); text-decoration:none; }
+  .admin-badge { display:inline-block; padding:0.2rem 0.6rem; background:rgba(245,166,35,0.15); color:var(--amber); font-size:0.6rem; letter-spacing:0.15em; text-transform:uppercase; margin-bottom:1rem; }
+  .pw-rules { font-size:0.62rem; color:var(--text-muted); margin-top:0.4rem; line-height:1.6; }
+</style>
+<div class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-header">
+      <div class="auth-logo">SUNBELT</div>
+      <div class="auth-subtitle">Snack Station POS — New Account</div>
+    </div>
+    <div class="auth-card">
+      {% if is_admin_page %}<div class="admin-badge">⚡ Admin Registration</div>{% endif %}
+      <div class="auth-card-title">Create a new {% if is_admin_page %}admin{% else %}employee{% endif %} account</div>
+      {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+      <form method="POST">
+        <input type="hidden" name="is_admin" value="{{ 'Yes' if is_admin_page else 'No' }}"/>
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <input type="text" name="username" class="form-input" placeholder="choose a username" required/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-input" placeholder="min 8 chars + special char" required/>
+          <div class="pw-rules">Min 8 characters · Must include: $ # @ ! * %</div>
+        </div>
+        <button type="submit" class="btn btn-amber btn-lg" style="width:100%; margin-top:0.5rem;">Create Account →</button>
+      </form>
+    </div>
+    <div class="auth-footer"><a href="{{ url_for('index') }}">← Back to main menu</a></div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Inventory · Sunbelt Admin{% endblock %}
+{% block content %}
+<style>
+  .inv-wrap { padding:2rem; }
+  .inv-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:0.75rem; margin-top:1.5rem; }
+  .inv-card { background:var(--surface); border:1px solid var(--border); padding:1.25rem; }
+  .inv-item-name { font-size:0.78rem; color:var(--text); margin-bottom:0.75rem; font-weight:500; }
+  .inv-qty-row { display:flex; align-items:center; gap:0.5rem; }
+  .inv-input { width:70px; padding:0.4rem 0.6rem; background:var(--surface2); border:1px solid var(--border2); color:var(--text); font-family:var(--mono); font-size:0.78rem; text-align:center; }
+  .inv-input:focus { outline:none; border-color:var(--amber); }
+  .inv-save-btn { padding:0.4rem 0.75rem; background:var(--surface3); border:1px solid var(--border2); color:var(--text-dim); font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.15s; }
+  .inv-save-btn:hover { border-color:var(--green); color:var(--green); }
+  .inv-save-btn.saved { border-color:var(--green); color:var(--green); }
+  .low-stock { border-color:rgba(239,68,68,0.4); }
+  .low-badge { font-size:0.58rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--red); }
+  .back-link { font-size:0.65rem; color:var(--text-muted); text-decoration:none; letter-spacing:0.1em; }
+  .back-link:hover { color:var(--amber); }
+</style>
+
+<div class="inv-wrap">
+  <a href="{{ url_for('admin') }}" class="back-link">← Admin Panel</a>
+  <div class="page-header" style="margin-top:1rem;">
+    <div class="page-label">Admin · Inventory</div>
+    <div class="page-title">Stock Levels</div>
+  </div>
+
+  <div class="inv-grid">
+    {% for item in inventory %}
+    <div class="inv-card {% if item.QUANTITY < 20 %}low-stock{% endif %}">
+      <div class="inv-item-name">{{ item.ITEM }}</div>
+      {% if item.QUANTITY < 20 %}<div class="low-badge">⚠ Low Stock</div>{% endif %}
+      <div class="inv-qty-row" style="margin-top:0.5rem;">
+        <input type="number" class="inv-input" value="{{ item.QUANTITY }}" min="0"
+               id="qty-{{ loop.index }}" data-item="{{ item.ITEM }}"/>
+        <button class="inv-save-btn" onclick="saveQty({{ loop.index }}, '{{ item.ITEM }}')">Save</button>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+<script>
+async function saveQty(idx, item) {
+  const input = document.getElementById('qty-' + idx);
+  const btn = input.nextElementSibling;
+  const qty = parseInt(input.value);
+  const res = await fetch('/admin/inventory/update', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({item, quantity: qty})
+  });
+  const data = await res.json();
+  if (data.success) {
+    btn.textContent = '✓ Saved';
+    btn.classList.add('saved');
+    setTimeout(() => { btn.textContent = 'Save'; btn.classList.remove('saved'); }, 2000);
+  }
+}
+</script>
+{% endblock %}

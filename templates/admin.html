@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Admin · Sunbelt{% endblock %}
+{% block content %}
+<style>
+  .admin-wrap { min-height:calc(100vh - 56px); padding:2.5rem; background:var(--bg); }
+  .admin-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:1.25rem; margin-top:2rem; }
+  .admin-card {
+    background:var(--surface); border:1px solid var(--border);
+    padding:1.75rem; text-decoration:none; color:inherit;
+    transition:all 0.2s; position:relative; overflow:hidden;
+    display:block;
+  }
+  .admin-card::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background:var(--amber); transform:scaleX(0); transform-origin:left; transition:transform 0.25s; }
+  .admin-card:hover { border-color:var(--amber); }
+  .admin-card:hover::after { transform:scaleX(1); }
+  .admin-card-icon { font-size:2rem; margin-bottom:1rem; }
+  .admin-card-title { font-family:var(--display); font-size:1rem; font-weight:700; color:var(--text); margin-bottom:0.4rem; }
+  .admin-card-desc { font-size:0.7rem; color:var(--text-muted); line-height:1.6; }
+  .back-link { font-size:0.65rem; color:var(--text-muted); text-decoration:none; letter-spacing:0.1em; }
+  .back-link:hover { color:var(--amber); }
+</style>
+
+<div class="admin-wrap">
+  <a href="{{ url_for('pos') }}" class="back-link">← Back to POS</a>
+  <div class="page-header" style="margin-top:1rem;">
+    <div class="page-label">Admin Panel</div>
+    <div class="page-title">Manage Concessions</div>
+  </div>
+  <div class="admin-grid">
+    <a href="{{ url_for('admin_menu') }}" class="admin-card">
+      <div class="admin-card-icon">📋</div>
+      <div class="admin-card-title">Menu Management</div>
+      <div class="admin-card-desc">Add, remove, or transfer items. Update prices across the menu.</div>
+    </a>
+    <a href="{{ url_for('admin_inventory') }}" class="admin-card">
+      <div class="admin-card-icon">📦</div>
+      <div class="admin-card-title">Inventory</div>
+      <div class="admin-card-desc">View and update stock levels for all inventory items.</div>
+    </a>
+    <a href="{{ url_for('analytics') }}" class="admin-card">
+      <div class="admin-card-icon">📊</div>
+      <div class="admin-card-title">Analytics</div>
+      <div class="admin-card-desc">Sales reports, top sellers, earnings by sport and away team.</div>
+    </a>
+    <a href="{{ url_for('register') }}" class="admin-card">
+      <div class="admin-card-icon">👤</div>
+      <div class="admin-card-title">Add Employee</div>
+      <div class="admin-card-desc">Register a new employee account for the POS system.</div>
+    </a>
+    <a href="{{ url_for('register') }}?admin=true" class="admin-card">
+      <div class="admin-card-icon">⚡</div>
+      <div class="admin-card-title">Add Admin</div>
+      <div class="admin-card-desc">Register a new admin account with full system access.</div>
+    </a>
+  </div>
+</div>
+{% endblock %}

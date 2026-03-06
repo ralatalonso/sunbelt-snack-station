@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+{% block title %}Analytics · Sunbelt Admin{% endblock %}
+{% block content %}
+<style>
+  .analytics-wrap { padding:2rem; }
+  .stats-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1rem; margin-top:1.5rem; margin-bottom:2rem; }
+  .stat-card { background:var(--surface); border:1px solid var(--border); padding:1.25rem; }
+  .stat-label { font-size:0.58rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--text-muted); margin-bottom:0.5rem; }
+  .stat-value { font-family:var(--display); font-size:1.5rem; font-weight:800; color:var(--amber); }
+  .stat-sub { font-size:0.65rem; color:var(--text-muted); margin-top:0.25rem; }
+  .section-head { font-size:0.6rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--amber); margin-bottom:1rem; padding-bottom:0.5rem; border-bottom:1px solid var(--border); }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1.5rem; margin-bottom:2rem; }
+  .analytics-card { background:var(--surface); border:1px solid var(--border); padding:1.25rem; }
+  .tab-row { display:flex; gap:0.5rem; margin-bottom:1rem; }
+  .tab-btn { padding:0.4rem 1rem; background:transparent; border:1px solid var(--border2); color:var(--text-muted); font-family:var(--mono); font-size:0.62rem; letter-spacing:0.1em; text-transform:uppercase; cursor:pointer; transition:all 0.15s; }
+  .tab-btn.active { border-color:var(--amber); color:var(--amber); background:var(--amber-glow); }
+  .tab-content { display:none; }
+  .tab-content.active { display:block; }
+  .back-link { font-size:0.65rem; color:var(--text-muted); text-decoration:none; letter-spacing:0.1em; }
+  .back-link:hover { color:var(--amber); }
+  .earnings-bar { height:4px; background:var(--border); margin-top:0.4rem; }
+  .earnings-fill { height:100%; background:var(--amber); }
+</style>
+
+<div class="analytics-wrap">
+  <a href="{{ url_for('admin') }}" class="back-link">← Admin Panel</a>
+  <div class="page-header" style="margin-top:1rem;">
+    <div class="page-label">Admin · Analytics</div>
+    <div class="page-title">Sales Reports</div>
+  </div>
+
+  <!-- KPI CARDS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Total Games Logged</div>
+      <div class="stat-value">{{ all_games|length }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Orders</div>
+      <div class="stat-value">{{ all_games|sum(attribute='order_count') or 0 }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Total Earnings</div>
+      <div class="stat-value">${{ '%.2f'|format(all_games|sum(attribute='earnings') or 0) }}</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Top Seller</div>
+      {% if top_sellers %}
+        <div class="stat-value" style="font-size:1rem;">{{ top_sellers[0].item_ID }}</div>
+        <div class="stat-sub">{{ top_sellers[0].total_sold }} sold</div>
+      {% else %}
+        <div class="stat-value">—</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- EARNINGS BY SPORT / TEAM -->
+  <div class="two-col">
+    <div class="analytics-card">
+      <div class="section-head">Avg Earnings by Sport</div>
+      {% if avg_by_sport %}
+        {% set max_earn = avg_by_sport[0].avg_earnings %}
+        {% for row in avg_by_sport %}
+        <div style="margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-dim);">
+            <span>{{ row.sport.replace(' Game','') }}</span>
+            <span style="color:var(--amber);">${{ '%.2f'|format(row.avg_earnings) }}</span>
+          </div>
+          <div class="earnings-bar">
+            <div class="earnings-fill" style="width:{{ ((row.avg_earnings / max_earn) * 100)|int }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}<div style="font-size:0.7rem; color:var(--text-muted);">No data yet.</div>{% endif %}
+    </div>
+
+    <div class="analytics-card">
+      <div class="section-head">Avg Earnings by Away Team</div>
+      {% if avg_by_team %}
+        {% set max_team = avg_by_team[0].avg_earnings %}
+        {% for row in avg_by_team %}
+        <div style="margin-bottom:0.75rem;">
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--text-dim);">
+            <span>{{ row.away_team }}</span>
+            <span style="color:var(--amber);">${{ '%.2f'|format(row.avg_earnings) }}</span>
+          </div>
+          <div class="earnings-bar">
+            <div class="earnings-fill" style="width:{{ ((row.avg_earnings / max_team) * 100)|int }}%"></div>
+          </div>
+        </div>
+        {% endfor %}
+      {% else %}<div style="font-size:0.7rem; color:var(--text-muted);">No data yet.</div>{% endif %}
+    </div>
+  </div>
+
+  <!-- DETAILED REPORTS TABS -->
+  <div class="analytics-card">
+    <div class="section-head">Detailed Reports</div>
+    <div class="tab-row">
+      <button class="tab-btn active" onclick="switchTab(this,'individual')">Individual Sales</button>
+      <button class="tab-btn" onclick="switchTab(this,'summary')">Summarized Performance</button>
+      <button class="tab-btn" onclick="switchTab(this,'games')">All Games</button>
+    </div>
+
+    <div id="tab-individual" class="tab-content active">
+      {% if individual_sales %}
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Date</th><th>Sport</th><th>Away Team</th><th>Item</th><th>Qty</th><th>Cost</th></tr></thead>
+          <tbody>
+            {% for row in individual_sales %}
+            <tr>
+              <td>{{ row.game_ID[4:] }}</td>
+              <td>{{ row.sport.replace(' Game','') }}</td>
+              <td>{{ row.away_team }}</td>
+              <td>{{ row.ITEM }}</td>
+              <td>{{ row.quantity }}</td>
+              <td>${{ '%.2f'|format(row.cost) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div style="font-size:0.7rem; color:var(--text-muted); padding:1rem 0;">No sales data yet.</div>{% endif %}
+    </div>
+
+    <div id="tab-summary" class="tab-content">
+      {% if summary_sales %}
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Sport</th><th>Item</th><th>Total Qty</th><th>Total Earnings</th></tr></thead>
+          <tbody>
+            {% for row in summary_sales %}
+            <tr>
+              <td>{{ row.sport.replace(' Game','') }}</td>
+              <td>{{ row.ITEM }}</td>
+              <td>{{ row.total_qty }}</td>
+              <td style="color:var(--amber);">${{ '%.2f'|format(row.total_earnings) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div style="font-size:0.7rem; color:var(--text-muted); padding:1rem 0;">No data yet.</div>{% endif %}
+    </div>
+
+    <div id="tab-games" class="tab-content">
+      {% if all_games %}
+      <div style="overflow-x:auto;">
+        <table class="table">
+          <thead><tr><th>Game ID</th><th>Sport</th><th>Away Team</th><th>Orders</th><th>Earnings</th></tr></thead>
+          <tbody>
+            {% for g in all_games %}
+            <tr>
+              <td style="font-size:0.65rem; color:var(--text-muted);">{{ g.game_ID }}</td>
+              <td>{{ g.sport.replace(' Game','') }}</td>
+              <td>{{ g.away_team }}</td>
+              <td>{{ g.order_count or 0 }}</td>
+              <td style="color:var(--amber);">${{ '%.2f'|format(g.earnings or 0) }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}<div style="font-size:0.7rem; color:var(--text-muted); padding:1rem 0;">No games logged yet.</div>{% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+function switchTab(el, tabId) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + tabId).classList.add('active');
+}
+</script>
+{% endblock %}

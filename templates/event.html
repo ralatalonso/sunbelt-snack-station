@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Event Selection · Sunbelt{% endblock %}
+{% block content %}
+<style>
+  .event-wrap { min-height:calc(100vh - 56px); display:flex; align-items:center; justify-content:center; padding:2rem;
+    background: radial-gradient(ellipse at 50% 20%, rgba(245,166,35,0.05) 0%, transparent 60%), var(--bg); }
+  .event-box { width:100%; max-width:560px; }
+  .event-header { margin-bottom:2rem; }
+  .event-card { background:var(--surface); border:1px solid var(--border); padding:2.5rem; }
+  .sport-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:0.75rem; margin-bottom:1.5rem; }
+  .sport-btn {
+    padding:1.25rem 0.5rem; background:var(--surface2); border:1px solid var(--border2);
+    color:var(--text-dim); font-family:var(--mono); font-size:0.65rem; letter-spacing:0.1em;
+    text-transform:uppercase; cursor:pointer; text-align:center; transition:all 0.15s;
+  }
+  .sport-btn:hover, .sport-btn.selected { border-color:var(--amber); color:var(--amber); background:var(--amber-glow); }
+  .sport-btn .sport-icon { font-size:1.5rem; display:block; margin-bottom:0.4rem; }
+  .section-divider { height:1px; background:var(--border); margin:1.5rem 0; }
+  .two-col { display:grid; grid-template-columns:1fr 1fr; gap:1rem; }
+</style>
+
+<div class="event-wrap">
+  <div class="event-box">
+    <div class="event-header">
+      <div class="page-label">Step 1 of 2</div>
+      <div class="page-title">Select Event</div>
+    </div>
+    <div class="event-card">
+      {% if error %}<div class="alert alert-error">{{ error }}</div>{% endif %}
+      <form method="POST" id="eventForm">
+        <div class="form-group">
+          <label class="form-label">Sport</label>
+          <div class="sport-grid">
+            {% set icons = {'Football Game':'🏈','Basketball Game':'🏀','Soccer Game':'⚽','Baseball Game':'⚾','Softball Game':'🥎'} %}
+            {% for sport in sports %}
+            <label class="sport-btn" id="sport-{{ loop.index }}">
+              <input type="radio" name="sport" value="{{ sport }}" style="display:none" required
+                onchange="document.querySelectorAll('.sport-btn').forEach(b=>b.classList.remove('selected')); this.closest('.sport-btn').classList.add('selected')"/>
+              <span class="sport-icon">{{ icons.get(sport,'🏟️') }}</span>
+              {{ sport.replace(' Game','') }}
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="two-col">
+          <div class="form-group">
+            <label class="form-label">Gender</label>
+            <select name="gender" class="form-select">
+              <option value="Men's">Men's</option>
+              <option value="Women's">Women's</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Level</label>
+            <select name="level" class="form-select">
+              <option value="Varsity">Varsity</option>
+              <option value="JV">JV</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Away Team</label>
+          <select name="away_team" class="form-select" required>
+            <option value="" disabled selected>Select away team...</option>
+            {% for team in away_teams %}
+            <option value="{{ team }}">{{ team }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button type="submit" class="btn btn-amber btn-lg" style="width:100%; margin-top:0.5rem;">
+          Open Register →
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
