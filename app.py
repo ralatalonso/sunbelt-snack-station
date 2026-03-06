@@ -6,7 +6,9 @@ import os
 app = Flask(__name__)
 app.secret_key = 'sunbelt-snack-station-secret-2024'
 
-DATABASE = 'concession_stand.db'
+# Use absolute path so DB works correctly on Render and locally
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE = os.path.join(BASE_DIR, 'concession_stand.db')
 
 SPECIAL_CHARS = ['$', '#', '@', '!', '*', '%']
 
@@ -523,6 +525,8 @@ def analytics():
         individual_sales=individual_sales, summary_sales=summary_sales,
         all_games=all_games)
 
+init_db()
+
 if __name__ == '__main__':
-    init_db()
     app.run(debug=True)
+
